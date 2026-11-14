@@ -1,0 +1,413 @@
+/* Forcer le calcul propre des largeurs dans tout le simulateur */
+#pn-sim-panel,
+#pn-sim-panel * {
+  box-sizing: border-box;
+}
+
+/* Bouton flottant d'ouverture */
+#pn-sim-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99999;
+  background-color: #008673;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 134, 115, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+#pn-sim-toggle:hover {
+  background-color: #006b5b;
+  transform: translateY(-2px);
+}
+
+/* Panneau principal du simulateur (plus large et garanti sans scroll horizontal) */
+#pn-sim-panel {
+  position: fixed;
+  bottom: 75px;
+  right: 20px;
+  width: 500px;
+  max-width: calc(100vw - 32px);
+  max-height: 85vh;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+  z-index: 99999;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #d0d7de;
+}
+
+#pn-sim-panel.pn-hidden {
+  display: none !important;
+}
+
+/* En-tête */
+.pn-sim-header {
+  background: #008673;
+  color: #fff;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.pn-sim-header button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+/* Barre d'onglets */
+.pn-sim-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  flex-shrink: 0;
+}
+
+.pn-sim-tab {
+  flex: 1;
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #475569;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pn-sim-tab:hover {
+  color: #008673;
+  background: #e2e8f0;
+}
+
+.pn-sim-tab.active {
+  color: #008673;
+  border-bottom-color: #008673;
+  background: #ffffff;
+}
+
+/* Corps du panneau : uniquement scroll vertical, jamais horizontal */
+.pn-sim-body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13px;
+  flex: 1;
+}
+
+.pn-tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.pn-tab-content.active {
+  display: flex;
+}
+
+/* Résumé de la moyenne générale */
+.pn-sim-summary {
+  background: #f0faf8;
+  border: 1px solid #b2dfdb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pn-sim-summary-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #008673;
+}
+
+.pn-sim-diff {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.pn-diff-up {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.pn-diff-down {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Formulaires compacts et responsives */
+.pn-sim-section-title {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #475569;
+  margin-bottom: 6px;
+  letter-spacing: 0.4px;
+}
+
+.pn-sim-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.pn-sim-form .pn-full {
+  grid-column: 1 / -1;
+}
+
+.pn-sim-form .pn-span-2 {
+  grid-column: span 2;
+}
+
+.pn-sim-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pn-sim-field label {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pn-sim-field input,
+.pn-sim-field select {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12.5px;
+  background: #fff;
+}
+
+.pn-sim-btn-primary {
+  background: #008673;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pn-sim-btn-primary:hover {
+  background: #006b5b;
+}
+
+.pn-sim-btn-secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pn-sim-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+/* Liste des matières et notes dans le panneau */
+.pn-sim-subj-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.pn-sim-subj-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: #fff;
+  width: 100%;
+  min-width: 0;
+}
+
+/* En-tête de carte matière avec retour à la ligne intelligent */
+.pn-sim-subj-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  font-weight: 700;
+  margin-bottom: 7px;
+  gap: 6px 10px;
+}
+
+.pn-sim-subj-top > span {
+  flex: 1 1 auto;
+  min-width: 120px;
+  font-size: 12.5px;
+  word-break: break-word;
+}
+
+.pn-sim-subj-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11.5px;
+  margin-left: auto;
+}
+
+.pn-sim-subj-coef {
+  width: 44px;
+  padding: 2px 4px;
+  font-size: 11.5px;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.pn-sim-grades-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.pn-sim-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  max-width: 100%;
+}
+
+.pn-sim-chip.is-sim {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+  font-weight: 600;
+}
+
+.pn-sim-chip button,
+.pn-del-subj-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 12px;
+}
+
+.pn-sim-chip input.pn-grade-coef {
+  width: 38px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  font-size: 10.5px;
+  padding: 1px 3px;
+  text-align: center;
+  background: #fff;
+}
+
+/* Zone du graphique d'évolution */
+.pn-chart-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pn-chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+#pn-sim-chart {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.pn-chart-legend {
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Styles injectés dans la liste PRONOTE */
+.pn-simulated-row {
+  background-color: rgba(124, 58, 237, 0.06) !important;
+}
+
+.pn-sim-badge {
+  background: #7c3aed;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-right: 6px;
+  text-transform: uppercase;
+}

@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "PRONOTE - Simulateur de Notes & Moyennes",
+  "version": "1.0.0",
+  "description": "Ajoutez des notes simulées avec coefficients et barèmes, et recalculez vos moyennes PRONOTE en temps réel.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.index-education.net/*",
+        "file:///*"
+      ],
+      "css": ["styles.css"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
