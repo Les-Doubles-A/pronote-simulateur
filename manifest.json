@@ -1,12 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "PRONOTE - Simulateur de Notes & Moyennes",
-  "version": "1.0.0",
-  "description": "Ajoutez des notes simulées avec coefficients et barèmes, et recalculez vos moyennes PRONOTE en temps réel.",
+  "name": "PRONOTE - Assistant Notes & Devoirs IA",
+  "version": "2.0.0",
+  "description": "Assistant PRONOTE adaptatif selon la page active : simulateur de notes/moyennes et analyse/résumé des devoirs à faire via LM Studio local.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {

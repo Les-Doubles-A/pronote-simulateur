@@ -1,7 +1,7 @@
 ; Installeur Inno Setup de pronote-simulateur. Compilation : iscc installer\pronote-simulateur.iss
 ; Le setup est cree dans installer\Output\pronote-simulateur-Setup-1.0.0.exe
 #define MyAppName "pronote-simulateur"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "2.0.0"
 #define MyAppURL "https://github.com/Les-Doubles-A/pronote-simulateur"
 
 [Setup]
@@ -39,6 +39,7 @@ Source: "INSTALLATION.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "pronote-simulateur.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\icons\*"; DestDir: "{app}\extension\icons"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\manifest.json"; DestDir: "{app}\extension"; Flags: ignoreversion
+Source: "..\background.js"; DestDir: "{app}\extension"; Flags: ignoreversion
 Source: "..\content.js"; DestDir: "{app}\extension"; Flags: ignoreversion
 Source: "..\styles.css"; DestDir: "{app}\extension"; Flags: ignoreversion
 
