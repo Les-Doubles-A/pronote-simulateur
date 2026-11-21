@@ -298,8 +298,14 @@
   }
 
   function formatCoefDisplay(coefStrOrNum) {
-    if (typeof coefStrOrNum === "string" && coefStrOrNum.includes("/")) {
-      return coefStrOrNum;
+    if (typeof coefStrOrNum === "string") {
+      const cleaned = coefStrOrNum.trim().replace(",", ".");
+      if (cleaned.includes("/")) {
+        return cleaned.replace(/\s+/g, "");
+      }
+      const n = Number(cleaned);
+      if (isNaN(n)) return "1";
+      return Number.isInteger(n) ? String(n) : String(Number(n.toFixed(4)));
     }
     const n = Number(coefStrOrNum);
     if (isNaN(n)) return "1";
@@ -339,6 +345,112 @@
       return { isNonNumeric: true };
     }
     return { isNonNumeric: false, value, scale };
+  }
+
+  const COEF_TEXT_REGEX =
+    /\b(?:coeff?(?:icient|iciente)?|pond(?:[ée]ration|eraci[óo]n)?|weight)\.?\s*:?\s*(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?)/i;
+  const COEF_MULT_REGEX =
+    /^\(?\s*[x×]\s*(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?)\s*\)?$/i;
+  const COEF_NUM_ONLY_REGEX =
+    /^(?:[x×]\s*)?(\d+(?:[.,]\d+)?(?:\s*\/\s*\d+(?:[.,]\d+)?)?)$/i;
+
+  function parseCoefCandidate(rawStr) {
+    if (!rawStr) return null;
+    const normalized = String(rawStr).replace(/\s+/g, "").replace(",", ".");
+    const val = parseExactCoef(normalized);
+    if (!isNaN(val) && val >= 0) {
+      return { coef: val, coefRaw: normalized, detected: true };
+    }
+    return null;
+  }
+
+  function extractCoefFromText(text) {
+    if (!text) return null;
+    const match = String(text).match(COEF_TEXT_REGEX);
+    if (match && match[1]) {
+      return parseCoefCandidate(match[1]);
+    }
+    return null;
+  }
+
+  function extractCoefFromItem(item) {
+    if (!item) return { coef: 1, coefRaw: "1", detected: false };
+
+    // 1. Éléments explicitement dédiés aux coefficients (classes ou data-coef)
+    const dedicatedEls = item.querySelectorAll('[class*="coef" i], [data-coef]');
+    for (const el of dedicatedEls) {
+      const dataCoef = el.getAttribute("data-coef");
+      if (dataCoef !== null) {
+        const parsed = parseCoefCandidate(dataCoef);
+        if (parsed) return parsed;
+      }
+      const fromLabel =
+        extractCoefFromText(el.getAttribute("aria-label")) ||
+        extractCoefFromText(el.getAttribute("title")) ||
+        extractCoefFromText(el.textContent);
+      if (fromLabel) return fromLabel;
+
+      const trimmed = normalizeText(el.textContent);
+      const numMatch = trimmed.match(COEF_NUM_ONLY_REGEX);
+      if (numMatch && numMatch[1]) {
+        const parsed = parseCoefCandidate(numMatch[1]);
+        if (parsed) return parsed;
+      }
+    }
+
+    // 2. Zones de métadonnées PRONOTE (.infos-supp, .ie-sous-titre, .zone-complementaire, etc.)
+    const metaSelectors =
+      ".infos-supp, .ie-sous-titre, .zone-complementaire, .zone-gauche, .sr-only, .as-info, .ie-chips, .tag-style";
+    const metaEls = item.querySelectorAll(metaSelectors);
+    for (const el of metaEls) {
+      const found =
+        extractCoefFromText(el.getAttribute("aria-label")) ||
+        extractCoefFromText(el.getAttribute("title")) ||
+        extractCoefFromText(el.textContent);
+      if (found) return found;
+
+      // Notation compacte type "×2" ou "(x0,5)" dans un élément feuille hors note/date
+      if (
+        el.children.length === 0 &&
+        !el.closest(".note-devoir") &&
+        !el.matches("time") &&
+        !el.closest("time")
+      ) {
+        const multMatch = normalizeText(el.textContent).match(COEF_MULT_REGEX);
+        if (multMatch && multMatch[1]) {
+          const parsed = parseCoefCandidate(multMatch[1]);
+          if (parsed) return parsed;
+        }
+      }
+    }
+
+    // 3. Attributs d'accessibilité (aria-label / title) sur la ligne ou ses enfants
+    const directAttr =
+      extractCoefFromText(item.getAttribute("aria-label")) ||
+      extractCoefFromText(item.getAttribute("title"));
+    if (directAttr) return directAttr;
+
+    const attrEls = item.querySelectorAll("[aria-label], [title]");
+    for (const el of attrEls) {
+      const found =
+        extractCoefFromText(el.getAttribute("aria-label")) ||
+        extractCoefFromText(el.getAttribute("title"));
+      if (found) return found;
+    }
+
+    // 4. Repli sur le texte complet de la ligne (uniquement avec mot-clé explicite Coef/Pond/Weight)
+    const fromFullText = extractCoefFromText(item.textContent);
+    if (fromFullText) return fromFullText;
+
+    // 5. Note explicitement marquée hors moyenne / non comptabilisée dans les métadonnées
+    for (const el of metaEls) {
+      const txt = normalizeText(el.textContent);
+      if (/\b(non\s+comptabilis[ée]e|hors\s+moyenne)\b/i.test(txt)) {
+        return { coef: 0, coefRaw: "0", detected: true };
+      }
+    }
+
+    return { coef: 1, coefRaw: "1", detected: false };
   }
 
   function getGlobalAverageSpan() {
@@ -407,13 +519,14 @@
         const color = colorEl
           ? colorEl.style.getPropertyValue("--color-line").trim() || "#008673"
           : "#008673";
+        const parsedSubjCoef = extractCoefFromItem(item);
 
         currentSubject = {
           id: `subj_${parsedSubjects.length}`,
           name,
           color,
-          subjectCoef: 1,
-          subjectCoefRaw: "1",
+          subjectCoef: parsedSubjCoef.coef,
+          subjectCoefRaw: parsedSubjCoef.coefRaw,
           origAvg,
           currentAvg: origAvg,
           domRow: wrapperCell,
@@ -432,6 +545,7 @@
         if (parsedNote && !parsedNote.isNonNumeric) {
           const dateLabel = timeEl ? timeEl.textContent.trim() : "Devoir";
           const dtAttr = timeEl ? timeEl.getAttribute("datetime") : "";
+          const parsedGradeCoef = extractCoefFromItem(item);
 
           currentSubject.grades.push({
             id: `g_${currentSubject.id}_${currentSubject.grades.length}`,
@@ -440,8 +554,8 @@
             sortOrder: dateAttrToSortKey(dtAttr, idx),
             value: parsedNote.value,
             scale: parsedNote.scale,
-            coef: 1,
-            coefRaw: "1",
+            coef: parsedGradeCoef.coef,
+            coefRaw: parsedGradeCoef.coefRaw,
             isSimulated: false,
           });
         }
@@ -2010,7 +2124,7 @@
           chip.querySelector(".pn-grade-coef").addEventListener("change", (e) => {
             const raw = e.target.value.trim();
             const c = parseExactCoef(raw);
-            if (!isNaN(c) && c > 0) {
+            if (!isNaN(c) && c >= 0) {
               g.coef = c;
               g.coefRaw = raw;
               recalculateAll();

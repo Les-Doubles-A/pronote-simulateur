@@ -11,7 +11,7 @@ Extension navigateur (Manifest V3) adaptative qui s'ajuste automatiquement à la
 <!-- installeur-release -->
 ## Installation
 
-Téléchargez **`pronote-simulateur-Setup-2.0.0.exe`** depuis la [dernière release](https://github.com/Les-Doubles-A/pronote-simulateur/releases/latest), puis lancez-le.
+Téléchargez **`pronote-simulateur-Setup-2.0.1.exe`** depuis la [dernière release](https://github.com/Les-Doubles-A/pronote-simulateur/releases/latest), puis lancez-le.
 
 L'installeur copie l'extension dans `%LOCALAPPDATA%\Programs\pronote-simulateur\extension` puis affiche la marche à suivre :
 

@@ -1,7 +1,7 @@
 ; Installeur Inno Setup de pronote-simulateur. Compilation : iscc installer\pronote-simulateur.iss
 ; Le setup est cree dans installer\Output\pronote-simulateur-Setup-1.0.0.exe
 #define MyAppName "pronote-simulateur"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppURL "https://github.com/Les-Doubles-A/pronote-simulateur"
 
 [Setup]

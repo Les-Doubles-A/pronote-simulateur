@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PRONOTE - Assistant Notes & Devoirs IA",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Assistant PRONOTE adaptatif selon la page active : simulateur de notes/moyennes et analyse/résumé des devoirs à faire via LM Studio local.",
   "icons": {
     "16": "icons/icon16.png",
